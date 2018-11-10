@@ -1,0 +1,46 @@
+#ifndef BASKET_H
+#define BASKET_H
+
+#include <set>
+#include <memory>
+#include "quote.h"
+namespace n_basket
+{
+  class basket
+  {
+  public:
+    void add_item(const std::shared_ptr<n_quo::quote> &);
+    //打印所有书总价和每本书价格，返回所有书总价
+    double total_receipt(std::ostream &) const;
+  private:
+    static bool compare(const std::shared_ptr<n_quo::quote> &lp
+                        ,const std::shared_ptr<n_quo::quote> &rp);
+    std::multiset<std::shared_ptr<n_quo::quote>, decltype (compare) *> items{};
+  };
+    bool basket::compare(const std::shared_ptr<n_quo::quote> &lp
+                        ,const std::shared_ptr<n_quo::quote> &rp)
+    {
+      //比较书籍编号
+      return lp->isbn() < rp->isbn();
+    }
+
+    inline
+    void basket::add_item(const std::shared_ptr<n_quo::quote> &quoPtr)
+    {
+      items.insert(quoPtr);
+    }
+
+    double basket::total_receipt(std::ostream &os) const
+    {
+      double ret{0.0};
+      for (auto iter = items.begin(); iter != items.end(); iter = items.upper_bound(*iter))
+        {       //读取每本书籍并使用upper_bound返回下一本书所在位置
+          ret += n_quo::print_total(os, **iter, items.count(*iter));
+        }
+      os << "basket tatol: " << ret << std::endl;
+      return ret;
+    }
+
+}
+
+#endif // BASKET_H
